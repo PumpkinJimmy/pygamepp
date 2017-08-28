@@ -3,6 +3,7 @@ import pygame
 from pygame.locals import *
 from framework.singleton import Singleton
 from framework.schedule import Scheduler
+from framework.event import EventDispatcher
 
 class Application(Singleton):
     """
@@ -38,6 +39,7 @@ class Application(Singleton):
         self.clock = pygame.time.Clock()
         self.scene = None
         self.scheduler = Scheduler.instance()
+        self.event_dispatcher = EventDispatcher.instance()
         self.init()
 
     def init(self):
@@ -53,9 +55,8 @@ class Application(Singleton):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
-                self.scene._handle(event)
+                self.event_dispatcher.handle(event)
             dt = self.clock.tick(self.tick)
-            # self.scene._update(dt)
             self.scheduler.update(dt)
             self.scene._draw(self.screen)
 

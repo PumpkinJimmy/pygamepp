@@ -2,7 +2,7 @@ import pygame
 
 from framework import dispatcher
 from framework.schedule import Scheduler
-
+from framework.event import EventDispatcher
 
 class Node:
     """
@@ -89,15 +89,6 @@ class Node:
         初始化hook
         """
 
-    def _update(self, dt):
-        """
-        Update操作
-        调用self.update钩子，并调用孩子的update
-        """
-        self.update(dt)
-        for child in self.children:
-            child._update(dt)
-
     def _draw(self, surf):
         """
         Draw操作
@@ -110,15 +101,6 @@ class Node:
         pygame.display.update(res_rect)
         self.draw(surf)
 
-    def _handle(self, event):
-        """
-        Handle操作
-        调用self.handle钩子并传递给孩子
-        """
-        self.handle(event)
-        for child in self.children:
-            child._handle(event)
-
     def schedule(self, callback):
         Scheduler.instance().add_updater(callback)
 
@@ -130,6 +112,9 @@ class Node:
 
     def unschedule_update(self):
         Scheduler.instance().remove_updater(self.update)
+
+    def listen(self, event_type, callback):
+        EventDispatcher.instance().add_listener(event_type, callback)
 
     def update(self, dt):
         """

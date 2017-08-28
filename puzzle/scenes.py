@@ -1,5 +1,6 @@
 from framework.node import Node
 from framework.app import Application
+from framework.event import listen
 from pygame.locals import *
 from player import Player
 from puzzle import Maze
@@ -16,6 +17,7 @@ class StartUp(Node):
             (255, 255, 255)
         )
         self.rect.center = app.screen.get_rect().center
+        self.listen(KEYDOWN, self.handle)
 
     def handle(self, event):
         if event.type == KEYDOWN:
@@ -35,6 +37,7 @@ class Level(Node):
         self.player.maze = self.maze
         self.add_child(self.player)
         self.schedule_update()
+
     def update(self, dt):
         tiles = self.player.cover_tile(self.player.sprite.rect)
         if self.maze.end in tiles:
@@ -56,8 +59,8 @@ class GameOver(Node):
         rect = text.get_rect()
         rect.center = app.screen.get_rect().center
         self.image.blit(text, rect)
+        self.listen(KEYDOWN, self.handle)
 
     def handle(self, event):
-        if event.type == KEYDOWN:
-            if event.key == K_RETURN:
-                sys.exit()
+        if event.key == K_RETURN:
+            sys.exit()

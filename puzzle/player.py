@@ -45,6 +45,7 @@ class Player(Node):
         self.speed = 5
         self.add_child(self.sprite)
         pygame.key.set_repeat(50, 30)
+        self.listen(KEYDOWN, self.handle)
 
     def cover_tile(self, rect):
         startx = rect.left // 75
@@ -70,16 +71,15 @@ class Player(Node):
         if not self.cover_solid(new_rect):
             self.sprite.rect = new_rect
     def handle(self, event):
-        if event.type == KEYDOWN:
-            if event.key == K_LEFT:
-                self.move_x(-self.speed)
-                self.sprite.goside(1)
-            elif event.key == K_RIGHT:
-                self.move_x(self.speed)
-                self.sprite.goside(2)
-            elif event.key == K_UP:
-                self.move_y(-self.speed)
-                self.sprite.goside(3)
-            elif event.key == K_DOWN:
-                self.move_y(self.speed)
-                self.sprite.goside(0)
+        if event.key == K_LEFT:
+            self.move_x(-self.speed)
+            self.sprite.goside(1)
+        elif event.key == K_RIGHT:
+            self.move_x(self.speed)
+            self.sprite.goside(2)
+        elif event.key == K_UP:
+            self.move_y(-self.speed)
+            self.sprite.goside(3)
+        elif event.key == K_DOWN:
+            self.move_y(self.speed)
+            self.sprite.goside(0)
