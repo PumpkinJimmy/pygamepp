@@ -15,3 +15,9 @@ class Scene(Node):
             child.handle(event)
             if child.shallow:
                 break
+
+class EmptyScene(Scene):
+    """
+    空场景
+    """
+    pass
