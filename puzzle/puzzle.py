@@ -85,7 +85,7 @@ class MazeImp:
 class Maze(Node):
     def init(self):
         self.imp = MazeImp()
-        self.maze_size = (9, 9)
+        self.maze_size = (9, 11)
         self.data = self.imp.generate_kruskal(self.maze_size)
         self.end = (self.maze_size[0] - 2, self.maze_size[1] - 2)
         for row in range(self.maze_size[0]):

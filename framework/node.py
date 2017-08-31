@@ -4,6 +4,7 @@ from framework import dispatcher
 from framework.schedule import Scheduler
 from framework.event import EventDispatcher
 
+
 class Node:
     """
     节点类
@@ -115,6 +116,18 @@ class Node:
 
     def listen(self, event_type, callback):
         EventDispatcher.instance().add_listener(event_type, callback)
+
+    def on_enter(self):
+        """
+        节点载入时执行
+        """
+        pass
+
+    def on_exit(self):
+        """
+        节点卸载时执行
+        """
+        pass
 
     def update(self, dt):
         """

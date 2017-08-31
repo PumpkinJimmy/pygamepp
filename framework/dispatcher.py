@@ -45,12 +45,16 @@ class SimpleSignalDispatcher(SignalDispatcher):
         return getattr(obj, "on_" + name, self._invalid_slot)
 
     def _invalid_slot(self, *args, **kwds):
-        """"不合法槽，占位。"""
+        """"
+        不合法槽，占位。
+        """
         logging.error("Call a invalid slot")
         raise Exception("Call a invalid slot")
 
     def send(self, sender, signal, *args, **kwds):
-        """"查表广播"""
+        """"
+        查表广播
+        """
         for slot in self._connections.get(sender, {}).get(signal, []):
             slot(*args, **kwds)
 

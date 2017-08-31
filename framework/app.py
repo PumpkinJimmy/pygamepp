@@ -1,6 +1,7 @@
 import sys, logging
 import pygame
 from pygame.locals import *
+from framework.scene import EmptyScene
 from framework.singleton import Singleton
 from framework.schedule import Scheduler
 from framework.event import EventDispatcher
@@ -37,7 +38,8 @@ class Application(Singleton):
         self.font = pygame.font.Font(self.font_family, self.font_size)
         self.screen = None
         self.clock = pygame.time.Clock()
-        self.scene = None
+        self.scene = EmptyScene()
+        self.next_scene = EmptyScene()
         self.scheduler = Scheduler.instance()
         self.event_dispatcher = EventDispatcher.instance()
         self.init()
@@ -48,10 +50,14 @@ class Application(Singleton):
         pygame.display.set_caption(self.title)
 
     def run(self):
-        if self.scene is None:
+        if self.next_scene is None:
             logging.warning("No scene.Stop running")
             return
         while 1:
+            if self.next_scene != self.scene:
+                self.scene.on_exit()
+                self.scene = self.next_scene
+                self.scene.on_enter()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
@@ -61,8 +67,8 @@ class Application(Singleton):
             self.scene._draw(self.screen)
 
     def run_with_scene(self, scene):
-        self.scene = scene
+        self.next_scene = scene
         self.run()
 
     def replace_scene(self, scene):
-        self.scene = scene
+        self.next_scene = scene
