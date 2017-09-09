@@ -1,6 +1,6 @@
 import random, pprint, pygame
 from framework.node import Node
-from framework.app import Application
+from framework.director import Director
 from pygame.locals import *
 
 def find(father, x):
@@ -98,7 +98,7 @@ class Maze(Node):
         size = self.maze_size
         width = 75
         height = 75
-        self.image = pygame.Surface(Application.instance().resolution)
+        self.image = pygame.Surface(Director.instance().resolution)
         for row in range(size[0]):
             for col in range(size[1]):
                 self.image.blit(self.tile_images[self.data[row * size[1] + col]],

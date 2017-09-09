@@ -1,5 +1,5 @@
 from framework.node import Node
-from toolkit.animation import AnimateSprite
+from framework.sprite import AnimateSprite
 import pygame
 from pygame.locals import *
 
@@ -17,11 +17,6 @@ class PlayerSprite(Node):
             for col in range(4):
                 side.append(image.subsurface(Rect(col * width, row * height, width, height)))
             sprite = AnimateSprite.create_with_images(side)
-            # sprite.rect.top = row * height
-            sprite._update = sprite.update
-            sprite._handle = lambda x: None
-            sprite._draw = sprite.draw
-            # self.add_child(sprite)
             self.side_sprites.append(sprite)
         self.add_child(self.side_sprites[0])
         self.rect.size = self.children[0].rect.size
@@ -38,6 +33,7 @@ class PlayerSprite(Node):
         self.children[0].update(dt)
         self.children[0].rect.topleft = self.rect.topleft
 
+
 class Player(Node):
     def init(self):
         self.sprite = PlayerSprite()
@@ -45,7 +41,7 @@ class Player(Node):
         self.speed = 5
         self.add_child(self.sprite)
         pygame.key.set_repeat(50, 30)
-        self.listen(KEYDOWN, self.handle)
+        self.listen(KEYDOWN, self.on_keydown)
 
     def cover_tile(self, rect):
         startx = rect.left // 75
@@ -54,23 +50,27 @@ class Player(Node):
         endy = rect.bottom // 75
         tiles = [(row, col) for row in range(starty, endy + 1) for col in range(startx, endx + 1)]
         return tiles
+
     def cover_solid(self, rect):
         tiles = self.cover_tile(rect)
         for tile in tiles:
             if self.maze.data[tile[0] * self.maze.maze_size[1] + tile[1]]:
                 return True
         return False
+
     def move_x(self, x):
         new_rect = self.sprite.rect.copy()
         new_rect.left += x
         if not self.cover_solid(new_rect):
             self.sprite.rect = new_rect
+
     def move_y(self, y):
         new_rect = self.sprite.rect.copy()
         new_rect.top += y
         if not self.cover_solid(new_rect):
             self.sprite.rect = new_rect
-    def handle(self, event):
+
+    def on_keydown(self, event):
         if event.key == K_LEFT:
             self.move_x(-self.speed)
             self.sprite.goside(1)

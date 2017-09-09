@@ -1,6 +1,7 @@
 import pygame
-from framework.app import Application
+from framework.director import Director
 from framework.scene import Scene
+from framework.event import EventDispatcher
 
 from framework.node import Node
 
@@ -14,8 +15,9 @@ class Layer(Node):
     def init(self):
         super(Layer, self).init()
         self.shallow = False
-        self.image = pygame.Surface(Application.instance().resolution)
+        self.image = pygame.Surface(Director.instance().resolution)
         self.rect = self.image.get_rect()
+        self.event_dispatcher = EventDispatcher()
 
     @classmethod
     def create_scene(cls):
@@ -25,6 +27,8 @@ class Layer(Node):
         return scene
 
     def handle(self, event):
-        self.send(event.type, event)
+        self.event_dispatcher.send(self, event.type, event)
         for child in self.children:
-            child.handle(child)
+            child.handle(event)
+
+EmptyLayer = Layer

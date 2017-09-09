@@ -1,8 +1,9 @@
+import logging
 import pygame
 
 from framework import dispatcher
 from framework.schedule import Scheduler
-from framework.event import EventDispatcher
+from framework.event import EventDispatcher, EventListener
 
 
 class Node:
@@ -23,6 +24,9 @@ class Node:
         self.children = []
         self.children_table = {}
         self._dispatcher = dispatcher.simple_dispatcher
+        self.event_dispatcher = None
+        self._listeners = []
+        self.installed = False
         if image is None:
             self.__image = pygame.Surface((0, 0))
         else:
@@ -50,10 +54,12 @@ class Node:
     def add_child(self, child, zorder=0, tag=None):
         # assert issubclass(Node, type(child))
         self.children.append(child)
+        child.parent = self
         if tag is not None:
             self.children_table[tag] = child
 
     def remove_child(self, child):
+        child.parent = None
         self.children.remove(child)
 
     def remove_child_with_tag(self, tag):
@@ -115,19 +121,70 @@ class Node:
         Scheduler.instance().remove_updater(self.update)
 
     def listen(self, event_type, callback):
-        EventDispatcher.instance().add_listener(event_type, callback)
+        """
+        准备事件监听
+        如果self.installed，事件监听会被马上加载
+        """
+        self._listeners.append(EventListener(None, event_type, callback, receiver=self))
+        if self.installed:
+            self.load_listener(self._listeners)
+
+    def load_listener(self, listeners):
+        """
+        职责链
+        向上请求一个事件调度器来添加事件监听
+        :return: 事件调度器或None（在listeners为空时）
+        """
+        if len(listeners) == 0:
+            return
+        if self.event_dispatcher is None:
+            if self.parent is None:
+                logging.warning("No event dispatcher. Failed load listeners")
+                return
+            self.parent.load_listener(listeners)
+            # self.event_dispatcher = self.parent.load_listener(listeners)
+        else:
+            for listener in listeners:
+                listener.sender = self
+                self.event_dispatcher.add_listener(listener)
+        return self.event_dispatcher
+
+    def remove_listener(self, node):
+        """
+        职责链
+        向上请求一个事件调度器来移除给定节点所有相关事件监听
+        :param node: 节点
+        :return: 事件调度器
+        """
+        if self.event_dispatcher is None:
+            if self.parent is not None:
+                self.parent.remove_listener(node)
+                # self.event_dispatcher = self.parent.remove_listener(node)
+        else:
+            self.event_dispatcher.remove_listener_by_sender(node)
+            self.event_dispatcher.remove_listener_by_receiver(node)
+        return self.event_dispatcher
 
     def on_enter(self):
         """
         节点载入时执行
+        先调用当前结点on_enter，再调用孩子
         """
-        pass
+        self.installed = True
+        self.load_listener(self._listeners)
+        self._listeners = []
+        for child in self.children:
+            child.on_enter()
 
     def on_exit(self):
         """
         节点卸载时执行
+        先调用孩子on_enter，再调用当前节点
         """
-        pass
+        for child in self.children:
+            child.on_exit()
+        self.installed = False
+        self.remove_listener(self)
 
     def update(self, dt):
         """
